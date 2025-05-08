@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 
 from utils import mean_location, distance_from_ref, get_pois
 
@@ -119,6 +120,8 @@ if all(orig_point) and number>0:
         mp = mean_location(pd.DataFrame(coordinates).transpose())
         coordinates['meetpoint'] = {"Latitude": mp[0], "Longitude": mp[1], "colour":"#B200ED"}
         
+        G = ox.graph_from_point((coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']), network_type='all', dist=1000)
+        
         with st.expander("Points details"):
         
             col1, col2 = st.columns(2)
@@ -147,9 +150,16 @@ if all(orig_point) and number>0:
                         radius=distance, opacity=0.6, fill=True).add_to(m)
         
             pois = get_pois((coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']), tags=tags, distance=distance)
+            
+            distance_aux = []
+            for i, row in enumerate(pois.iterrows()):
+                 distance_aux.append(int(ox.distance.great_circle(coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude'],pois['Latitude'][i], pois['Longitude'][i])))
+            pois['Distance(m)'] = distance_aux
+        
+            pois.sort_values(by='Distance(m)', inplace=True)
         
             with col1:
-                st.table(pois.rename(columns={'name':chosen_tag}).set_index(chosen_tag)[['Latitude','Longitude']])
+                st.table(pois.rename(columns={'name':chosen_tag.upper()}).set_index(chosen_tag.upper())[['Latitude','Longitude','Distance(m)']])
 
         if pois is None:
             # pois is None when not found
