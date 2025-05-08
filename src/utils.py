@@ -167,7 +167,10 @@ def mean_location(coords_df):
         
     return (mean_location_['latitude'], mean_location_['longitude'])
 
-def get_pois(center_point, tags, distance=2000):
+def get_pois(center_point, tags, distance=2000, count=0):
+    if count > 10:
+        print(f'{tags} not found!')
+        return None
     try:
         gdf_pois = ox.features_from_point(center_point, tags=tags, dist=distance)[['geometry','name']]
         pois = gdf_pois[gdf_pois['name'].notna()].loc[('node',)]
@@ -177,12 +180,13 @@ def get_pois(center_point, tags, distance=2000):
         
         result = coords.rename(columns={'x':'Longitude', 'y': 'Latitude'})
         
-        return result
     
     except Exception:#KeyError or osmnx._errors.InsufficientResponseError:
         
-        print(f'{tags} not found!')
-        return None
+        result = get_pois(center_point, tags, distance=distance+1000, count=count+1)
+        
+    return result
+
 
 if __name__=='__main__':
     

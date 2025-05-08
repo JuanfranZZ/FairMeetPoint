@@ -151,37 +151,41 @@ if all(orig_point) and number>0:
         
             pois = get_pois((coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']), tags=tags, distance=distance)
             
-            distance_aux = []
-            for i, row in enumerate(pois.iterrows()):
-                 distance_aux.append(int(ox.distance.great_circle(coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude'],pois['Latitude'][i], pois['Longitude'][i])))
-            pois['Distance(m)'] = distance_aux
-        
-            pois.sort_values(by='Distance(m)', inplace=True)
-        
-            with col1:
-                st.table(pois.rename(columns={'name':chosen_tag.upper()}).set_index(chosen_tag.upper())[['Latitude','Longitude','Distance(m)']])
-
-        if pois is None:
-            # pois is None when not found
-            st.warning(f'{chosen_tag} not found closer than {distance} from meetpoint!')
-        else:
-            for i, p in tqdm(pois.iterrows()):
-                folium.Marker(location=[float(p['Latitude']),float(p['Longitude'])], 
-                            tooltip=folium.Tooltip(p['name'], permanent=True)).add_to(m)
-            
-            for k, v in coordinates.items():
-                if 'meet' not in k:
-                    color='green'
-                    icon_='bookmark'
-                else:
-                    color='purple'
-                    icon_='flag'
-                    
-                folium.Marker(location=[float(v['Latitude']), float(v['Longitude'])],
-                            tooltip=folium.Tooltip(k, permanent=True), 
-                            icon=folium.Icon(icon=icon_, color=color)).add_to(m)
+            if pois is None:
+                # pois is None when not found
+                st.warning(f'{chosen_tag} not found closer than {distance} from meetpoint!')
                 
-            map_a = folium_static(m, width=page_width, height=800)
+            else:
+            
+                distance_aux = []
+                for i, row in enumerate(pois.iterrows()):
+                 distance_aux.append(int(ox.distance.great_circle(coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude'],pois['Latitude'][i], pois['Longitude'][i])))
+                pois['Distance(m)'] = distance_aux
+        
+                pois.sort_values(by='Distance(m)', inplace=True)
+        
+                with col1:
+                    st.table(pois.rename(columns={'name':chosen_tag.upper()}).set_index(chosen_tag.upper())[['Latitude','Longitude','Distance(m)']])
+                
+                for i, p in tqdm(pois.iterrows()):
+                    folium.Marker(location=[float(p['Latitude']),float(p['Longitude'])], 
+                                tooltip=folium.Tooltip(p['name'], permanent=True)).add_to(m)
+            
+                for k, v in coordinates.items():
+                    if 'meet' not in k:
+                        color='green'
+                        icon_='bookmark'
+                    else:
+                        color='purple'
+                        icon_='flag'
+                        
+                    folium.Marker(location=[float(v['Latitude']), float(v['Longitude'])],
+                                tooltip=folium.Tooltip(k, permanent=True), 
+                                icon=folium.Icon(icon=icon_, color=color)).add_to(m)
+                    
+                map_a = folium_static(m, width=page_width, height=800)
+
+            
         
         
         
