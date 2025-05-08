@@ -12,7 +12,12 @@ from streamlit_folium import folium_static
 
 from tqdm import tqdm
 
+from streamlit_js_eval import streamlit_js_eval
+
+
 st.set_page_config(layout="wide")
+
+page_width = streamlit_js_eval(js_expressions='window.innerWidth', key='WIDTH')
 
 st.title("Meetpoint")
 
@@ -163,8 +168,7 @@ if all(orig_point) and number>0:
                             tooltip=folium.Tooltip(k, permanent=True), 
                             icon=folium.Icon(icon=icon_, color=color)).add_to(m)
                 
-            screen_width = 800
-            map_a = folium_static(m, width=screen_width, height=800)
+            map_a = folium_static(m, width=page_width, height=800)
         
         
         
