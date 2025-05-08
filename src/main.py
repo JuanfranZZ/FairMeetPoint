@@ -26,13 +26,18 @@ with col1:
     
 with col2:
     selector = st.selectbox('Type of input', ['City', 'Coordinates'])
+    
+    if selector == 'City':
+        orig_point_text = 'City'
+    elif selector == 'Coordinates':
+        orig_point_text = 'Coordinates: Latitude, Longitude'
 
 st.subheader('Origin points')
 # data of each origin point
 orig_point = []
 
 for i in range(number):
-    orig_point.append(st.text_input(f"origin_{i+1} - Coordinates or Name of City", value=None, placeholder="Latitude, Longitude | Name of city"))
+    orig_point.append(st.text_input(f"origin_{i+1} - {orig_point_text}", value=None, placeholder=orig_point_text))
     
 
 if all(orig_point) and number>0:
