@@ -31,6 +31,9 @@ with col2:
         orig_point_text = 'City'
     elif selector == 'Coordinates':
         orig_point_text = 'Latitude, Longitude'
+        
+if number>0:
+    st.subheader('Origin points')
 
 # data of each origin point
 orig_point = []
@@ -48,8 +51,6 @@ with col2:
     
 
 if all(orig_point) and number>0:
-    
-    st.subheader('Origin points')
     
     # list of categories
     
