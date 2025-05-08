@@ -20,23 +20,26 @@ st.set_page_config(layout="wide")
 
 page_width = streamlit_js_eval(js_expressions='window.innerWidth', key='WIDTH')
 
-st.title("Meetpoint")
 
-col1, col2 = st.columns(2)
 
-with col1:
-    # number of origin points
-    number = st.number_input(
-        "Number of points", value=0, placeholder="Type the number of participants...", step= 1, min_value=0)
-    st.write("The current number is ", number)
+with st.sidebar:
+    st.title("Meetpoint")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        # number of origin points
+        number = st.number_input(
+            "Number of points", value=0, placeholder="Type the number of participants...", step= 1, min_value=0)
+        st.write("The current number is ", number)
     
-with col2:
-    selector = st.selectbox('Type of input', ['City', 'Coordinates'])
-    
-    if selector == 'City':
-        orig_point_text = 'City'
-    elif selector == 'Coordinates':
-        orig_point_text = 'Latitude, Longitude'
+    with col2:
+        selector = st.selectbox('Type of input', ['City', 'Coordinates'])
+        
+        if selector == 'City':
+            orig_point_text = 'City'
+        elif selector == 'Coordinates':
+            orig_point_text = 'Latitude, Longitude'
         
 if number>0:
     st.subheader('Origin points')
@@ -110,7 +113,7 @@ if all(orig_point) and number>0:
         coordinates = {}  # origin points and meetpoint
         
         for i in range(number):
-            coordinates[orig_point_name[i]] = {"Latitude": Latitude[i], "Longitude": Longitude[i], "colour": "#0044ff"}
+            coordinates[orig_point_name[i]] = {"Latitude": Latitude[i], "Longitude": Longitude[i], "colour": "#4CBB17"}
 
 
         # meetpoint
@@ -182,8 +185,11 @@ if all(orig_point) and number>0:
                     folium.Marker(location=[float(v['Latitude']), float(v['Longitude'])],
                                 tooltip=folium.Tooltip(k, permanent=True), 
                                 icon=folium.Icon(icon=icon_, color=color)).add_to(m)
-                    
-        map_a = folium_static(m, width=int(page_width*0.8), height=800)
+        if pois is None:
+            # pois is None when not found
+            st.warning(f'{chosen_tag} not found closer than {distance} from meetpoint!')
+        else:
+            map_a = folium_static(m, width=int(page_width*0.8), height=800)
 
             
         
