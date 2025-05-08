@@ -114,7 +114,7 @@ if all(orig_point) and number>0:
         mp = mean_location(pd.DataFrame(coordinates).transpose())
         coordinates['meetpoint'] = {"Latitude": mp[0], "Longitude": mp[1], "colour":"#B200ED"}
         
-        with st.expander("Points details"):
+        with st.expander(st.markdown("## Points details")):
         
             col1, col2 = st.columns(2)
             
