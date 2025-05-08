@@ -114,21 +114,23 @@ if all(orig_point) and number>0:
         mp = mean_location(pd.DataFrame(coordinates).transpose())
         coordinates['meetpoint'] = {"Latitude": mp[0], "Longitude": mp[1], "colour":"#B200ED"}
         
-        col1, col2 = st.columns(2)
+        with st.expander("Points details"):
         
-        # table showing data
-        df = pd.DataFrame(coordinates).transpose()
-        
-        with col1:
-            st.table(df[['Latitude','Longitude']])
-        
-        with col2:
-            # map for coordinates points
-            map1 = st.map(df, latitude='Latitude', longitude='Longitude', size=20, color='colour')
-        
-            print('Meetpoint spherical:')
-            for k,v in coordinates.items():
-                distance_from_ref(k, (v['Latitude'], v['Longitude']), (coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']))
+            col1, col2 = st.columns(2)
+            
+            # table showing data
+            df = pd.DataFrame(coordinates).transpose()
+            
+            with col1:
+                st.table(df[['Latitude','Longitude']])
+            
+            with col2:
+                # map for coordinates points
+                map1 = st.map(df, latitude='Latitude', longitude='Longitude', size=20, color='colour')
+            
+                print('Meetpoint spherical:')
+                for k,v in coordinates.items():
+                    distance_from_ref(k, (v['Latitude'], v['Longitude']), (coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']))
         
         
         # Second map with points of interest
