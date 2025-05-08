@@ -49,7 +49,6 @@ with col2:
     
 
 if all(orig_point) and number>0:
-    # select amenity
     
     st.subheader('Meeting point setup')
     
@@ -79,7 +78,7 @@ if all(orig_point) and number>0:
         
     chosen_tag = st.selectbox('Choose your tag', list_tags)
     
-    # Definir las etiquetas para buscar
+    # Define tags to search
     tags = {chosen_category: chosen_tag}
     
     # select distance
@@ -97,7 +96,7 @@ if all(orig_point) and number>0:
                 Latitude.append(ox.geocode_to_gdf(point).centroid.get_coordinates()['y'].values[0])
                 Longitude.append(ox.geocode_to_gdf(point).centroid.get_coordinates()['x'].values[0])
 
-        coordinates = {}
+        coordinates = {}  # origin points and meetpoint
         
         for i in range(number):
             coordinates[orig_point_name[i]] = {"Latitude": Latitude[i], "Longitude": Longitude[i], "colour": "#0044ff"}
@@ -114,7 +113,7 @@ if all(orig_point) and number>0:
         df = pd.DataFrame(coordinates).transpose()
         st.table(df[['Latitude','Longitude']])
         
-        # mapa para puntos de coordenadas
+        # map for coordinates points
         map1 = st.map(df, latitude='Latitude', longitude='Longitude', size=20, color='colour')
         
         print('Meetpoint spherical:')
@@ -122,7 +121,7 @@ if all(orig_point) and number>0:
             distance_from_ref(k, (v['Latitude'], v['Longitude']), (coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']))
         
         
-        # crear segundo mapa para los puntos de interés
+        # Second map with points of interest
         st.subheader('Map with points of interest')
    
         m = folium.Map(location=[coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']], zoom_start=15)
