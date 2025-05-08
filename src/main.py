@@ -35,9 +35,17 @@ with col2:
 st.subheader('Origin points')
 # data of each origin point
 orig_point = []
+orig_point_name = []
 
-for i in range(number):
-    orig_point.append(st.text_input(f"origin_{i+1} - {orig_point_text}", value=None, placeholder=orig_point_text))
+col1, col2 = st.columns(2)
+
+with col1:
+    for i in range(number):
+        orig_point_name.append(st.text_input(f"origin_{i+1} - name", value=None, placeholder="Name"))
+    
+with col2:
+    for i in range(number):
+        orig_point.append(st.text_input(f"origin_{i+1} - {orig_point_text}", value=None, placeholder=orig_point_text))
     
 
 if all(orig_point) and number>0:
@@ -92,7 +100,7 @@ if all(orig_point) and number>0:
         coordinates = {}
         
         for i in range(number):
-            coordinates[f"origin_{i+1}"] = {"Latitude": Latitude[i], "Longitude": Longitude[i], "colour": "#0044ff"}
+            coordinates[orig_point_name[i]] = {"Latitude": Latitude[i], "Longitude": Longitude[i], "colour": "#0044ff"}
 
 
         # meetpoint
