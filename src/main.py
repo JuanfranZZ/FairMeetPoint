@@ -163,7 +163,7 @@ if all(orig_point) and number>0:
                             tooltip=folium.Tooltip(k, permanent=True), 
                             icon=folium.Icon(icon=icon_, color=color)).add_to(m)
                 
-            screen_width = st.screen_width
+            screen_width = 800
             map_a = folium_static(m, width=screen_width, height=800)
         
         
