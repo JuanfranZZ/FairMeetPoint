@@ -111,7 +111,7 @@ if all(orig_point) and number>0:
         #coordinates['meetpoint1'] = {"Latitude": mp1[0], "Longitude": mp1[1], "colour":"#ff0033"}
         
         mp = mean_location(pd.DataFrame(coordinates).transpose())
-        coordinates['meetpoint'] = {"Latitude": mp[0], "Longitude": mp[1], "colour":"#1ff035"}
+        coordinates['meetpoint'] = {"Latitude": mp[0], "Longitude": mp[1], "colour":"#B200ED"}
         
         col1, col2 = st.columns(2)
         
