@@ -138,15 +138,18 @@ if all(orig_point) and number>0:
                     distance_from_ref(k, (v['Latitude'], v['Longitude']), (coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']))
         
         
-        # Second map with points of interest
-        st.subheader('Map with points of interest')
+            # Second map with points of interest
+            st.subheader('Map with points of interest')
    
-        m = folium.Map(location=[coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']], zoom_start=15)
+            m = folium.Map(location=[coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']], zoom_start=15)
         
-        folium.Circle(location=[coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']],
-                      radius=distance, opacity=0.6, fill=True).add_to(m)
+            folium.Circle(location=[coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']],
+                        radius=distance, opacity=0.6, fill=True).add_to(m)
         
-        pois = get_pois((coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']), tags=tags, distance=distance)
+            pois = get_pois((coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']), tags=tags, distance=distance)
+        
+            with col1:
+                st.table(pois.rename(columns={'name':chosen_tag}).set_index(chosen_tag)[['Latitude','Longitude']])
 
         if pois is None:
             # pois is None when not found
