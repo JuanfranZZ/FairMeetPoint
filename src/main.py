@@ -86,7 +86,8 @@ if all(orig_point) and number>0:
     tags = {chosen_category: chosen_tag}
     
     # select distance
-    distance = st.number_input(label='Distance (m)', min_value=0, value='min', step=1)
+    #distance = st.number_input(label='Distance (m)', min_value=0, value='min', step=1)
+    distance = st.slider(label='Distance (m)', min_value=100, max_value=1000000, value=1000, step=100)
         
     calculate = st.button("Calculate")
     if calculate:
