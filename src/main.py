@@ -144,7 +144,7 @@ if all(orig_point) and number>0:
             # Second map with points of interest
             st.subheader('Map with points of interest')
    
-            m = folium.Map(location=[coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']], zoom_start=20)
+            m = folium.Map(location=[coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']], zoom_start=10)
         
             folium.Circle(location=[coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']],
                         radius=distance, opacity=0.6, fill=True).add_to(m)
