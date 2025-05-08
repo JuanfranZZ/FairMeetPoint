@@ -30,7 +30,7 @@ with col2:
     if selector == 'City':
         orig_point_text = 'City'
     elif selector == 'Coordinates':
-        orig_point_text = 'Coordinates: Latitude, Longitude'
+        orig_point_text = 'Latitude, Longitude'
 
 st.subheader('Origin points')
 # data of each origin point
