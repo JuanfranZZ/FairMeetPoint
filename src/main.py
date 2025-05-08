@@ -50,6 +50,8 @@ with col2:
 
 if all(orig_point) and number>0:
     
+    # list of categories
+    
     st.subheader('Meeting point setup')
     
     chosen_category = st.selectbox('Choose your category', 
@@ -109,16 +111,21 @@ if all(orig_point) and number>0:
         mp = mean_location(pd.DataFrame(coordinates).transpose())
         coordinates['meetpoint'] = {"Latitude": mp[0], "Longitude": mp[1], "colour":"#1ff035"}
         
+        col1, col2 = st.columns(2)
+        
         # table showing data
         df = pd.DataFrame(coordinates).transpose()
-        st.table(df[['Latitude','Longitude']])
         
-        # map for coordinates points
-        map1 = st.map(df, latitude='Latitude', longitude='Longitude', size=20, color='colour')
+        with col1:
+            st.table(df[['Latitude','Longitude']])
         
-        print('Meetpoint spherical:')
-        for k,v in coordinates.items():
-            distance_from_ref(k, (v['Latitude'], v['Longitude']), (coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']))
+        with col2:
+            # map for coordinates points
+            map1 = st.map(df, latitude='Latitude', longitude='Longitude', size=20, color='colour')
+        
+            print('Meetpoint spherical:')
+            for k,v in coordinates.items():
+                distance_from_ref(k, (v['Latitude'], v['Longitude']), (coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']))
         
         
         # Second map with points of interest
