@@ -183,7 +183,7 @@ if all(orig_point) and number>0:
                                 tooltip=folium.Tooltip(k, permanent=True), 
                                 icon=folium.Icon(icon=icon_, color=color)).add_to(m)
                     
-                map_a = folium_static(m, width=page_width, height=800)
+        map_a = folium_static(m, width=page_width, height=800)
 
             
         
