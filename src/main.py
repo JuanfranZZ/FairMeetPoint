@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import json
 
 from utils import mean_location, distance_from_ref, get_pois
 
@@ -14,6 +15,8 @@ from streamlit_folium import folium_static
 from tqdm import tqdm
 
 from streamlit_js_eval import streamlit_js_eval
+
+from classes import Meetpoint
 
 
 st.set_page_config(layout="wide")
@@ -65,29 +68,14 @@ if all(orig_point) and number>0:
     
     st.subheader('Meeting point setup')
     
-    chosen_category = st.selectbox('Choose your category', 
-                                   ('amenity', 'sport', 'leisure'))
-    if chosen_category == 'amenity':
-        list_tags = ['bar', 'restaurant', 
-                    'arts centre', 'bus station', 
-                    'casino', 'car rental', 'cinema', 
-                    'convention centre', 'events centre',
-                    'gym', 'hotel', 'juice bar', 'kiosk', 'library', 
-                    'park', 'planetarium', 'sauna', 'shop', 'spa', 'nightclub', 'pub']
-        
-    elif chosen_category == 'sport':
-        list_tags = ['climbing', 'soccer', 'billiards', 'darts', 'athletics', 'basketball',
-                     'beachvolleyball', 'billiards', 'bmx', 'bowls', 'boxing', 'canoe', 'climbing_adventure', 'crossfit',
-                     'cycling', 'dance', 'darts', 'fitness', 'golf', 'hiking', 'karting', 'kitesurfing', 'laser_tag',
-                     'miniature_golf', 'multi', 'paddle_tennis', 'padel', 'paintball', 'parachuting', 'parkour',
-                     'pelota', 'pickleball', 'pilates', 'racquet', 'roller_skating', 'running', 'scuba_diving',
-                     'shooting', 'skateboard', 'squash', 'surfing', 'swimming', 'table_tennis', 'table_soccer',
-                     'tennis', 'trampoline', 'ultimate', 'volleyball', 'water_polo', 'water_ski', 'windsurfing', 'yoga']
-        
-    elif chosen_category == 'leisure':
-        list_tags = ['sports_centre', 'sports_hall', 'stadium',
-                     'swimming_pool', 'recreation_ground',
-                     'golf_course', 'fitness_centre']
+    with open('src\categories.json') as json_file:
+        category_data = json.load(json_file)
+    
+    chosen_category = st.selectbox("Select the place's category",list(category_data.keys()))
+    
+    for k, v in category_data.items():
+        if chosen_category == k:
+            list_tags = v
         
     chosen_tag = st.selectbox('Choose your tag', list_tags)
     
@@ -97,35 +85,74 @@ if all(orig_point) and number>0:
     # select distance
     #distance = st.number_input(label='Distance (m)', min_value=0, value='min', step=1)
     distance = st.slider(label='Distance (m)', min_value=100, max_value=50000, value=1000, step=100)
+
+    # transform points into coordinates
+    if selector == 'Coordinates':
+        Latitude = [float(lat.split(',')[0]) for lat in orig_point]
+        Longitude = [float(lon.split(',')[1]) for lon in orig_point]
+    elif selector == 'City':
+        Latitude = []
+        Longitude = []
+        for point in orig_point:
+            Latitude.append(ox.geocode_to_gdf(point).centroid.get_coordinates()['y'].values[0])
+            Longitude.append(ox.geocode_to_gdf(point).centroid.get_coordinates()['x'].values[0])
+            
+    coordinates = {}  # origin points and meetpoint
         
-    calculate = st.button("Calculate", on_click=calculate())
+    for i in range(number):
+        coordinates[orig_point_name[i]] = {"Latitude": Latitude[i], "Longitude": Longitude[i], "colour": "#4CBB17"}
+    
+    # create meetpoint clas to make the calculations
+    MP = Meetpoint(orig_points=coordinates, distance=distance, tags=tags)
+        
+    calculate = st.button("Calculate", on_click=MP.calculate())
+    
     if calculate:
-        if selector == 'Coordinates':
-            Latitude = [float(lat.split(',')[0]) for lat in orig_point]
-            Longitude = [float(lon.split(',')[1]) for lon in orig_point]
-        elif selector == 'City':
-            Latitude = []
-            Longitude = []
-            for point in orig_point:
-                Latitude.append(ox.geocode_to_gdf(point).centroid.get_coordinates()['y'].values[0])
-                Longitude.append(ox.geocode_to_gdf(point).centroid.get_coordinates()['x'].values[0])
-
-        coordinates = {}  # origin points and meetpoint
-        
-        for i in range(number):
-            coordinates[orig_point_name[i]] = {"Latitude": Latitude[i], "Longitude": Longitude[i], "colour": "#4CBB17"}
-
 
         # meetpoint
         #mp1 = meetpoint([(l[0], l[1]) for l in list(zip(Latitude, Longitude))])
         #coordinates['meetpoint1'] = {"Latitude": mp1[0], "Longitude": mp1[1], "colour":"#ff0033"}
         
-        mp = mean_location(pd.DataFrame(coordinates).transpose())
-        coordinates['meetpoint'] = {"Latitude": mp[0], "Longitude": mp[1], "colour":"#B200ED"}
+        MP.calculate()
         
-        G = ox.graph_from_point((coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']), network_type='all', dist=1000)
+        if MP.pois is None:
+            # pois is None when not found
+            st.warning(f'{chosen_tag} not found closer than {distance} from meetpoint!')
+        else:
+            # Coloured map with points of interest
+            st.subheader('Map with points of interest')
+            
+            col1, col2 = st.columns([0.7,0.3])
+            
+            with col1:
+   
+                m = folium.Map(location=[coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']], zoom_start=10)
+            
+                folium.Circle(location=[coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']],
+                            radius=distance, opacity=0.6, fill=True).add_to(m)
+                
+                for i, p in tqdm(MP.pois.iterrows()):
+                    folium.Marker(location=[float(p['Latitude']),float(p['Longitude'])], 
+                                tooltip=folium.Tooltip(p['name'], permanent=True)).add_to(m)
+                
+                    for k, v in coordinates.items():
+                        if 'meet' not in k:
+                            color='green'
+                            icon_='bookmark'
+                        else:
+                            color='purple'
+                            icon_='flag'
+                            
+                        folium.Marker(location=[float(v['Latitude']), float(v['Longitude'])],
+                                    tooltip=folium.Tooltip(k, permanent=True), 
+                                    icon=folium.Icon(icon=icon_, color=color)).add_to(m)
+                
+                map_a = folium_static(m, width=int(page_width*0.8), height=800)
+            
+            with col2:
+                st.table(MP.fairness.rename(columns={'name': chosen_tag.upper()}).set_index(chosen_tag.upper()).sort_values(by='Inquity'))
         
-        with st.expander("Points details"):
+        with st.expander("Details"):
         
             col1, col2 = st.columns(2)
             
@@ -134,6 +161,7 @@ if all(orig_point) and number>0:
             
             with col1:
                 st.table(df[['Latitude','Longitude']])
+                st.table(MP.distances.rename(columns={'name':chosen_tag.upper()}).set_index(chosen_tag.upper()))
             
             with col2:
                 # map for coordinates points
@@ -142,75 +170,3 @@ if all(orig_point) and number>0:
                 print('Meetpoint spherical:')
                 for k,v in coordinates.items():
                     distance_from_ref(k, (v['Latitude'], v['Longitude']), (coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']))
-        
-        
-            # Second map with points of interest
-            st.subheader('Map with points of interest')
-   
-            m = folium.Map(location=[coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']], zoom_start=10)
-        
-            folium.Circle(location=[coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']],
-                        radius=distance, opacity=0.6, fill=True).add_to(m)
-        
-            pois = get_pois((coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']), tags=tags, distance=distance)
-            
-            if pois is None:
-                # pois is None when not found
-                st.warning(f'{chosen_tag} not found closer than {distance} from meetpoint!')
-                
-            else:
-                
-                distance_columns = []  # columns of every distance metric
-            
-                distance_meetpoint_aux = []  # distance from each pois to meetpoint
-                
-                for i, row in enumerate(pois.iterrows()):
-                    distance_meetpoint_aux.append(int(ox.distance.great_circle(coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude'],pois['Latitude'][i], pois['Longitude'][i])))
-                pois['Dist-meetpoint(m)'] = distance_meetpoint_aux 
-                distance_columns.append('Dist-meetpoint(m)')
-                
-                
-                for n in range(number):
-                    distance_pois_orig_aux = []  # distance from each pois to each pois
-                    for i, row in enumerate(pois.iterrows()):
-                        distance_pois_orig_aux.append(int(ox.distance.great_circle(coordinates[orig_point_name[n]]['Latitude'], coordinates[orig_point_name[n]]['Longitude'],pois['Latitude'][i], pois['Longitude'][i])))
-                    pois[f'Dist-{orig_point_name[n]}(m)'] = distance_pois_orig_aux 
-                    distance_columns.append(f'Dist-{orig_point_name[n]}(m)')
-                    
-                pois.sort_values(by='Dist-meetpoint(m)', inplace=True)
-                
-                with col1:
-                    st.table(pois.rename(columns={'name':chosen_tag.upper()}).set_index(chosen_tag.upper())[distance_columns])
-                
-                for i, p in tqdm(pois.iterrows()):
-                    folium.Marker(location=[float(p['Latitude']),float(p['Longitude'])], 
-                                tooltip=folium.Tooltip(p['name'], permanent=True)).add_to(m)
-            
-                for k, v in coordinates.items():
-                    if 'meet' not in k:
-                        color='green'
-                        icon_='bookmark'
-                    else:
-                        color='purple'
-                        icon_='flag'
-                        
-                    folium.Marker(location=[float(v['Latitude']), float(v['Longitude'])],
-                                tooltip=folium.Tooltip(k, permanent=True), 
-                                icon=folium.Icon(icon=icon_, color=color)).add_to(m)
-        if pois is None:
-            # pois is None when not found
-            st.warning(f'{chosen_tag} not found closer than {distance} from meetpoint!')
-        else:
-            map_a = folium_static(m, width=int(page_width*0.8), height=800)
-
-            
-        
-        
-        
-        
-        
-        
-    
-
-
-
