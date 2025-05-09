@@ -105,13 +105,15 @@ class Meetpoint():
         distances = self.distances[(c for c in self.distances.columns if ('meet' not in c) and ('name' not in c))]
         N = len(distances.columns)
         inquity = []
+        
+        for k in list(self.orig_points.keys()):
+            fairness[f'Balance_{k}'] = ''
     
         for row in distances.iterrows():
 
             total = np.sum(row[1])
             
-            for i, dist in enumerate(row[1]):
-                fairness[f'Balance_{list(self.orig_points.keys())[i]}'] = (total-dist)/total
+            fairness.iloc[row[0],1:] = (total-row[1].values)/total
 
             inquity.append(np.var(row[1]/total))
              
