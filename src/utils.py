@@ -125,17 +125,19 @@ def distance(p1, p2):
     p2_ = np.array(p2)
     return np.linalg.norm(p2_ - p1_)
 
-def fairness(*args):
+def fairness(args):
     
     total = np.sum(args)
     N = len(args)
     
-    dist = []
+    fairness_indep = []
     
     for arg in args:
-        dist.append(arg/total*N)
+        fairness_indep.append(arg/total - 1/N)
         
-    return dist      
+    fairness = np.var(fairness_indep)
+        
+    return fairness    
 
 def mean_location(coords_df):
     x = 0.0

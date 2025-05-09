@@ -98,7 +98,7 @@ if all(orig_point) and number>0:
     #distance = st.number_input(label='Distance (m)', min_value=0, value='min', step=1)
     distance = st.slider(label='Distance (m)', min_value=100, max_value=50000, value=1000, step=100)
         
-    calculate = st.button("Calculate")
+    calculate = st.button("Calculate", on_click=calculate())
     if calculate:
         if selector == 'Coordinates':
             Latitude = [float(lat.split(',')[0]) for lat in orig_point]
@@ -159,16 +159,28 @@ if all(orig_point) and number>0:
                 st.warning(f'{chosen_tag} not found closer than {distance} from meetpoint!')
                 
             else:
+                
+                distance_columns = []  # columns of every distance metric
             
-                distance_aux = []
+                distance_meetpoint_aux = []  # distance from each pois to meetpoint
+                
                 for i, row in enumerate(pois.iterrows()):
-                 distance_aux.append(int(ox.distance.great_circle(coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude'],pois['Latitude'][i], pois['Longitude'][i])))
-                pois['Distance(m)'] = distance_aux
-        
-                pois.sort_values(by='Distance(m)', inplace=True)
-        
+                    distance_meetpoint_aux.append(int(ox.distance.great_circle(coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude'],pois['Latitude'][i], pois['Longitude'][i])))
+                pois['Dist-meetpoint(m)'] = distance_meetpoint_aux 
+                distance_columns.append('Dist-meetpoint(m)')
+                
+                
+                for n in range(number):
+                    distance_pois_orig_aux = []  # distance from each pois to each pois
+                    for i, row in enumerate(pois.iterrows()):
+                        distance_pois_orig_aux.append(int(ox.distance.great_circle(coordinates[orig_point_name[n]]['Latitude'], coordinates[orig_point_name[n]]['Longitude'],pois['Latitude'][i], pois['Longitude'][i])))
+                    pois[f'Dist-{orig_point_name[n]}(m)'] = distance_pois_orig_aux 
+                    distance_columns.append(f'Dist-{orig_point_name[n]}(m)')
+                    
+                pois.sort_values(by='Dist-meetpoint(m)', inplace=True)
+                
                 with col1:
-                    st.table(pois.rename(columns={'name':chosen_tag.upper()}).set_index(chosen_tag.upper())[['Latitude','Longitude','Distance(m)']])
+                    st.table(pois.rename(columns={'name':chosen_tag.upper()}).set_index(chosen_tag.upper())[distance_columns])
                 
                 for i, p in tqdm(pois.iterrows()):
                     folium.Marker(location=[float(p['Latitude']),float(p['Longitude'])], 
