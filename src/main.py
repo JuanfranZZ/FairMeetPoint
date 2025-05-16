@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import json
+import os
 
 from utils import mean_location, distance_from_ref, get_pois
 
@@ -68,17 +69,8 @@ if all(orig_point) and number>0:
     
     st.subheader('Meeting point setup')
     
-    json_file = {
-    "amenity": ["bar", "restaurant", "arts centre", "bus station", "casino", "car rental", "cinema", "convention centre", "events centre","gym", "hotel", "juice bar", "kiosk", "library", "park", "planetarium", "sauna", "shop", "spa", "nightclub", "pub"],
-    "sport": ["climbing", "soccer", "billiards", "darts", "athletics", "basketball",
-                     "beachvolleyball", "billiards", "bmx", "bowls", "boxing", "canoe", "climbing_adventure", "crossfit",
-                     "cycling", "dance", "darts", "fitness", "golf", "hiking", "karting", "kitesurfing", "laser_tag",
-                     "miniature_golf", "multi", "paddle_tennis", "padel", "paintball", "parachuting", "parkour",
-                     "pelota", "pickleball", "pilates", "racquet", "roller_skating", "running", "scuba_diving",
-                     "shooting", "skateboard", "squash", "surfing", "swimming", "table_tennis", "table_soccer",
-                     "tennis", "trampoline", "ultimate", "volleyball", "water_polo", "water_ski", "windsurfing", "yoga"],
-    "leisure": ["sports_centre", "sports_hall", "stadium","swimming_pool", "recreation_ground","golf_course", "fitness_centre"]}
-    category_data = json_file
+    with open(r'src\static\categories.json') as f:
+        category_data = json.load(f)
     
     chosen_category = st.selectbox("Select the place's category",list(category_data.keys()))
     

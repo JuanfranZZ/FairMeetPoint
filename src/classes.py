@@ -110,7 +110,7 @@ class Meetpoint():
         inquity = []
         
         for k in list(self.orig_points.keys()):
-            fairness[f'Balance_{k}'] = ''
+            fairness[f'Adv_{k}'] = ''
     
         for row in distances.iterrows():
 
