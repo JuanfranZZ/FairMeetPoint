@@ -69,8 +69,12 @@ if all(orig_point) and number>0:
     
     st.subheader('Meeting point setup')
     
-    with open(r'src\static\categories.json') as f:
-        category_data = json.load(f)
+    try: # local debug
+        with open(r'src\static\categories.json') as f:
+            category_data = json.load(f)
+    except Exception:
+        with open(r'./src/static/categories.json') as f:
+            category_data = json.load(f)
     
     chosen_category = st.selectbox("Select the place's category",list(category_data.keys()))
     
