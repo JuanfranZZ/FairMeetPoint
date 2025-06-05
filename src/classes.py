@@ -17,7 +17,7 @@ class Meetpoint():
         self.number = len(orig_points)
         self.distance = distance
         self.tags = tags
-        self.tries_list = []
+        self.tries_list = [0]
         
     def calculate(self):
         self.coordinates['meetpoint'] = self.mean_point()

@@ -180,5 +180,5 @@ if all(orig_point) and number>0:
                     print('Meetpoint spherical:')
                     for k,v in coordinates.items():
                         distance_from_ref(k, (v['Latitude'], v['Longitude']), (coordinates['meetpoint']['Latitude'], coordinates['meetpoint']['Longitude']))
-    except Exception:
+    except Exception as e:
         st.warning('Try another tag place, please :)') 
